@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="Instantiatable">
+
+    <application
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:targetApi="s">
+
+        <!-- 注册GT悬浮窗 -->
+        <service
+            android:name="com.gsls.toolkit.GT_Floating"
+            android:exported="true" />
+
+        <service
+            android:name="com.gsls.gt.GT$EventBus$EventBusService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.gsls.gt.EventBus" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name=".GT$GTActivity"
+            android:launchMode="singleTask"
+            android:exported="true">
+        </activity>
+
+    </application>
+
+</manifest>
