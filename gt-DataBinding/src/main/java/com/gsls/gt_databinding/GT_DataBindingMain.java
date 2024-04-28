@@ -37,19 +37,19 @@ public class GT_DataBindingMain extends AbstractProcessor {
     }
 
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        DataBindingUtils.log("GSLS_King");
-        DataBindingUtils.log("roundEnv" + roundEnv);
+//        DataBindingUtils.log("GSLS_King");
+//        DataBindingUtils.log("roundEnv" + roundEnv);
 
         DataBindingUtils.init();
         boolean isKT = false;//是否为 KT
 
         for (Element element : roundEnv.getElementsAnnotatedWith(GT_DataBinding.class)) {
-            DataBindingUtils.log("element:" + element);
-            DataBindingUtils.log("elementGet1:" + element.getEnclosedElements());
-            DataBindingUtils.log("elementGet2:" + element.getSimpleName());
-            DataBindingUtils.log("elementGet3:" + element.getKind());
-            DataBindingUtils.log("elementGet4:" + element.getModifiers());
-            DataBindingUtils.log("elementGet6:" + element.getEnclosingElement());
+//            DataBindingUtils.log("element:" + element);
+//            DataBindingUtils.log("elementGet1:" + element.getEnclosedElements());
+//            DataBindingUtils.log("elementGet2:" + element.getSimpleName());
+//            DataBindingUtils.log("elementGet3:" + element.getKind());
+//            DataBindingUtils.log("elementGet4:" + element.getModifiers());
+//            DataBindingUtils.log("elementGet6:" + element.getEnclosingElement());
 
             GT_DataBinding annotation = element.getAnnotation(GT_DataBinding.class);
 
@@ -59,57 +59,57 @@ public class GT_DataBindingMain extends AbstractProcessor {
             bindingBean.setPackName(element.getEnclosingElement().toString());//设置包名
             bindingBean.setResourcePackName(DataBindingUtils.pageName(bindingBean.getPackName()));//设置包名
 
-            DataBindingUtils.log("annotation:" + annotation);
+//            DataBindingUtils.log("annotation:" + annotation);
             if (annotation != null) {
-                DataBindingUtils.log("setLayout:" + annotation.setLayout());
+//                DataBindingUtils.log("setLayout:" + annotation.setLayout());
                 bindingBean.setLayoutName(annotation.setLayout() + ".xml");//设置布局文件名称
                 bindingBean.setBingingType(annotation.setBindingType());//设置布局绑定的类型
 
                 //获取jar包完整路径
                 String path = getClass().getResource("").getPath();
-                DataBindingUtils.log("path1:" + path);
+//                DataBindingUtils.log("path1:" + path);
 
                 //获取当前项目名称
                 String projectName = System.getProperty("user.dir");
-                DataBindingUtils.log("projectName:" + projectName);
+//                DataBindingUtils.log("projectName:" + projectName);
                 DataBindingUtils.androidBean.setProjectPath(projectName);
 
                 //获取项目中所有模块
                 List<String> filesAllName = FileUtils.getFilesAllName(DataBindingUtils.androidBean.getProjectPath());
-                DataBindingUtils.log("filesAllName:" + filesAllName);
+//                DataBindingUtils.log("filesAllName:" + filesAllName);
 
                 assert filesAllName != null;
                 for (String filePath : filesAllName) {
                     String[] split = filePath.split("\\\\");
                     String fileName = split[split.length - 1];
                     if (FileUtils.fileIsDirectory(filePath) && DataBindingUtils.filtrationArray.contains(fileName)) {
-                        DataBindingUtils.log("FileDir:" + filePath);
+//                        DataBindingUtils.log("FileDir:" + filePath);
                         split = filePath.split("\\\\");
                         DataBindingUtils.androidBean.addJavaLibraryName(split[split.length - 1]);
                     }
                 }
-                DataBindingUtils.log("bindingBean1:" + bindingBean);
+//                DataBindingUtils.log("bindingBean1:" + bindingBean);
 
                 for (String libraryName : DataBindingUtils.androidBean.getJavaLibraryNames()) {
                     String classPath = DataBindingUtils.androidBean.getProjectPath() + "\\" + libraryName + "\\src\\main\\java\\" + bindingBean.getPackClassPath().replaceAll("\\.", "\\\\") + ".java";
                     String classPath2 = DataBindingUtils.androidBean.getProjectPath() + "\\" + libraryName + "\\src\\main\\java\\" + bindingBean.getPackClassPath().replaceAll("\\.", "\\\\") + ".kt";
 
                     //Java
-                    DataBindingUtils.log("classPath:" + classPath);
+//                    DataBindingUtils.log("classPath:" + classPath);
                     //Kotlin
-                    DataBindingUtils.log("classPath2:" + classPath2);
+//                    DataBindingUtils.log("classPath2:" + classPath2);
 
                     //Java
                     if (FileUtils.fileExist(classPath)) {
                         isKT = false;
-                        DataBindingUtils.log("Yes1:" + classPath);
+//                        DataBindingUtils.log("Yes1:" + classPath);
                         bindingBean.setJavaLibraryName(libraryName);
                         bindingBean.setClassPath(classPath);
                         String query = FileUtils.query(bindingBean.getClassPath());
                         bindingBean.setClassCode(query);//设置源码
-                        DataBindingUtils.log("query11:" + query);
+//                        DataBindingUtils.log("query11:" + query);
                         int R_Index = query.indexOf(".R;");
-                        DataBindingUtils.log("R_Index1:" + R_Index);
+//                        DataBindingUtils.log("R_Index1:" + R_Index);
                         if (R_Index != -1) {
                             int lastIndexOf = query.lastIndexOf("import ", R_Index);
                             query = query.substring(lastIndexOf + "import ".length(), R_Index);
@@ -120,21 +120,21 @@ public class GT_DataBindingMain extends AbstractProcessor {
                             query = query.replaceAll(";", "");
                         }
                         bindingBean.setResourcePackName(query);//设置包名
-                        DataBindingUtils.log("query:" + query);
+//                        DataBindingUtils.log("query:" + query);
                         break;
                     }
 
                     //Kotlin
                     if (FileUtils.fileExist(classPath2)) {
                         isKT = true;
-                        DataBindingUtils.log("Yes2:" + classPath2);
+//                        DataBindingUtils.log("Yes2:" + classPath2);
                         bindingBean.setJavaLibraryName(libraryName);
                         bindingBean.setClassPath(classPath2);
                         String query = FileUtils.query(bindingBean.getClassPath());
                         bindingBean.setClassCode(query);//设置源码
-                        DataBindingUtils.log("query12:" + query);
+//                        DataBindingUtils.log("query12:" + query);
                         int R_Index = query.indexOf(".R");
-                        DataBindingUtils.log("R_Index2:" + R_Index);
+//                        DataBindingUtils.log("R_Index2:" + R_Index);
                         if (R_Index != -1) {
                             int lastIndexOf = query.lastIndexOf("import ", R_Index);
                             query = query.substring(lastIndexOf + "import ".length(), R_Index);
@@ -145,7 +145,7 @@ public class GT_DataBindingMain extends AbstractProcessor {
                             query = query.replaceAll(";", "");
                         }
                         bindingBean.setResourcePackName(query);//设置包名
-                        DataBindingUtils.log("query:" + query);
+//                        DataBindingUtils.log("query:" + query);
                         break;
                     }
 
@@ -156,19 +156,19 @@ public class GT_DataBindingMain extends AbstractProcessor {
                 bindingBean.setLayoutAbsolutePath(bindingBean.getLayoutPath() + bindingBean.getLayoutName());
 
                 projectName = projectName.substring(projectName.lastIndexOf('\\') + 1);
-                DataBindingUtils.log("projectname2:" + projectName);
+//                DataBindingUtils.log("projectname2:" + projectName);
                 DataBindingUtils.androidBean.setProjectName(projectName);
 
                 int lastIndexOf = path.lastIndexOf("\\", path.length() - 2) + 1;
                 String javaLibraryName = path.substring(lastIndexOf, path.length() - 1);
-                DataBindingUtils.log("javaLibraryName:" + javaLibraryName);
+//                DataBindingUtils.log("javaLibraryName:" + javaLibraryName);
 
                 //查询出布局路径下所有的布局文件
                 List<String> xmlFileName = FileUtils.getFilesAllName(bindingBean.getLayoutPath());
-                if (xmlFileName == null || xmlFileName.size() == 0) {
+                if (xmlFileName == null || xmlFileName.isEmpty()) {
                     continue;
                 }
-                DataBindingUtils.log("xmlFileNameSize:" + xmlFileName.size());
+//                DataBindingUtils.log("xmlFileNameSize:" + xmlFileName.size());
 
                 for (String layoutPath : xmlFileName) {
                     String[] split = layoutPath.split("\\\\");
@@ -190,7 +190,7 @@ public class GT_DataBindingMain extends AbstractProcessor {
                 }*/
                 bindingBean.setXmlBeanList(xmlBeanList);
 
-                DataBindingUtils.log("bindingBean:" + bindingBean);
+//                DataBindingUtils.log("bindingBean:" + bindingBean);
 
                 DataBindingUtils.androidBean.addBindingBean(bindingBean);
 
@@ -281,7 +281,7 @@ public class GT_DataBindingMain extends AbstractProcessor {
                     case GT_DataBinding.FloatingWindow:
                         break;
                     case GT_DataBinding.Adapter:
-                        DataBindingUtils.log("bindingBean:" + bindingBean);
+//                        DataBindingUtils.log("bindingBean:" + bindingBean);
                         builder.append("import android.content.Context;\n")
                                 //导入****.R
                                 .append("import " + bindingBean.getResourcePackName() + ".R;\n")
@@ -366,6 +366,10 @@ public class GT_DataBindingMain extends AbstractProcessor {
 
                         builder.append("\tpublic " + bindingBean.getClassName() + "Binding(Context context) {\n" +
                                 "\t\tsuper(context);\n" +
+                                "\t}\n\n");
+
+                        builder.append("\tpublic " + bindingBean.getClassName() + "Binding(Context context, Bundle bundle) {\n" +
+                                "\t\tsuper(context, bundle);\n" +
                                 "\t}\n\n");
 
                         builder.append("\tprotected void initView(View view, PopupWindow popWindow) {\n" +
@@ -541,13 +545,13 @@ public class GT_DataBindingMain extends AbstractProcessor {
                     writer.flush();
                     writer.close();
                 } catch (IOException e) {
-                    DataBindingUtils.log("Automatic code generation failed:" + e);
+//                    DataBindingUtils.log("Automatic code generation failed:" + e);
                 }
 
             }
         }
 
-        DataBindingUtils.log("AndroidBean:" + DataBindingUtils.androidBean);
+//        DataBindingUtils.log("AndroidBean:" + DataBindingUtils.androidBean);
         return true;
     }
 

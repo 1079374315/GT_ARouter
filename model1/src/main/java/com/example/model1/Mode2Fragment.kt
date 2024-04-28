@@ -25,6 +25,8 @@ class Mode2Fragment : GT.GT_Fragment.BaseFragment() {
         GT.logt("初始化 Mode2Fragment")
         ARouter.getInstance().inject(this) //与Autowired配合使用
         "name:$name".logt()
+        arguments
+
 
     }
 

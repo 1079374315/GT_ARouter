@@ -12,7 +12,8 @@ public class MyApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        ARouter.init(this);
+        ARouter.init(this); //初始化
+        ARouter.openDebug(); //打开debug开关
     }
 
 

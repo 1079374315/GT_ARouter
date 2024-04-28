@@ -295,6 +295,7 @@ import java.lang.annotation.Target;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -347,7 +348,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -1205,18 +1205,31 @@ public class GT {
      *
      * @param toFragment
      */
-    public static void startFloatingWindow(Context context, Class<?> toFragment) {
+    public static void startFloatingWindow(Context context, Class<?> toFragment, Bundle... bundles) {
         if (Build.VERSION.SDK_INT >= 23) {
             if (!Settings.canDrawOverlays(context)) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()));
                 FragmentActivity fragmentActivity = (FragmentActivity) context;
                 fragmentActivity.startActivityForResult(intent, 0);
-            } else {
-                context.startService(new Intent(context, toFragment));
+                return;
             }
-        } else {
-            context.startService(new Intent(context, toFragment));
         }
+
+        Intent intent = new Intent(context, toFragment);
+        if(bundles != null && bundles.length != 0 && bundles[0] != null)
+            intent.putExtras(bundles[0]);
+        context.startService(intent);
+    }
+
+
+    /**
+     * 启动悬浮窗
+     *
+     * @param toFragment
+     */
+    public static void startFloatingWindow(Context context, GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+        startFloatingWindow(context, floatingWindow.getClass(), floatingWindow.getArguments());
+        floatingWindow = null;
     }
 
     //============================================= 日志功能 =========================================
@@ -1777,10 +1790,10 @@ public class GT {
             void init(Context context);
         }
 
-        public interface IInterceptor extends IProvider {
+        public interface IInterceptor{
+            void init(Context context, String injectObject);
 
-            public boolean process(Intent intent, InterceptorCallback callback);
-
+            boolean process(Intent intent, InterceptorCallback callback);
         }
 
         public static abstract class InterceptorCallback{
@@ -27833,17 +27846,18 @@ public class GT {
              *
              * @param toFragment
              */
-            public void startFloatingWindow(Class<?> toFragment) {
-                if (Build.VERSION.SDK_INT >= 23) {
-                    if (!Settings.canDrawOverlays(this)) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
-                        startActivityForResult(intent, 0);
-                    } else {
-                        startService(new Intent(this, toFragment));
-                    }
-                } else {
-                    startService(new Intent(this, toFragment));
-                }
+            public void startFloatingWindow(Class<?> toFragment, Bundle... bundles) {
+                GT.startFloatingWindow(this, toFragment, bundles);
+            }
+
+            /**
+             * 启动悬浮窗
+             *
+             * @param toFragment
+             */
+            public void startFloatingWindow(Context context, GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+                startFloatingWindow(floatingWindow.getClass(), floatingWindow.getArguments());
+                floatingWindow = null;
             }
 
             public GT_Fragment getGT_Fragment() {
@@ -30803,17 +30817,31 @@ public class GT {
              * @param context
              * @param toFragment
              */
-            public void startFloatingWindow(Context context, Class<?> toFragment) {
-                if (android.os.Build.VERSION.SDK_INT >= 23) {
-                    if (!Settings.canDrawOverlays(context)) {
-                        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()));
-                        FragmentActivity fragmentActivity = (FragmentActivity) context;
-                        fragmentActivity.startActivityForResult(intent, 0);
-                    } else {
-                        context.startService(new Intent(context, toFragment));
-                    }
-                } else {
-                    context.startService(new Intent(context, toFragment));
+            public void startFloatingWindow(Context context, Class<?> toFragment, Bundle... bundles) {
+                GT.startFloatingWindow(context, toFragment, bundles);
+            }
+
+            /**
+             * 启动悬浮窗
+             *
+             * @param toFragment
+             */
+            public void startFloatingWindow(Context context, GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+                startFloatingWindow(context, floatingWindow.getClass(), floatingWindow.getArguments());
+                floatingWindow = null;
+            }
+
+            /**
+             * 启动悬浮窗
+             *
+             * @param toFragment
+             */
+            public void startFloatingWindow(Class<?> toFragment, Bundle... bundles) {
+                if (activity == null) {
+                    activity = GT_Fragment.gt_fragment.getActivity();
+                }
+                if (activity != null) {
+                    GT.startFloatingWindow(activity, toFragment, bundles);
                 }
             }
 
@@ -30822,24 +30850,9 @@ public class GT {
              *
              * @param toFragment
              */
-            public void startFloatingWindow(Class<?> toFragment) {
-                if (activity == null) {
-                    activity = GT_Fragment.gt_fragment.getActivity();
-                }
-
-                if (activity != null) {
-                    if (android.os.Build.VERSION.SDK_INT >= 23) {
-                        if (!Settings.canDrawOverlays(activity)) {
-                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + activity.getPackageName()));
-                            FragmentActivity fragmentActivity = (FragmentActivity) activity;
-                            fragmentActivity.startActivityForResult(intent, 0);
-                        } else {
-                            activity.startService(new Intent(activity, toFragment));
-                        }
-                    } else {
-                        activity.startService(new Intent(activity, toFragment));
-                    }
-                }
+            public void startFloatingWindow(GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+                startFloatingWindow(floatingWindow.getClass(), floatingWindow.getArguments());
+                floatingWindow = null;
             }
 
 
@@ -31887,22 +31900,12 @@ public class GT {
              * @param context
              * @param toFragment
              */
-            public void startFloatingWindow(Context context, Class<?> toFragment) {
+            public void startFloatingWindow(Context context, Class<?> toFragment, Bundle... bundles) {
                 if (context == null) {
                     context = GT_Fragment.gt_fragment.getActivity();
                 }
                 if (context != null) {
-                    if (Build.VERSION.SDK_INT >= 23) {
-                        if (!Settings.canDrawOverlays(context)) {
-                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + context.getPackageName()));
-                            FragmentActivity fragmentActivity = (FragmentActivity) context;
-                            fragmentActivity.startActivityForResult(intent, 0);
-                        } else {
-                            context.startService(new Intent(context, toFragment));
-                        }
-                    } else {
-                        context.startService(new Intent(context, toFragment));
-                    }
+                    GT.startFloatingWindow(context, toFragment, bundles);
                 }
 
             }
@@ -31912,24 +31915,34 @@ public class GT {
              *
              * @param toFragment
              */
-            public void startFloatingWindow(Class<?> toFragment) {
+            public void startFloatingWindow(Context context, GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+                startFloatingWindow(context, floatingWindow.getClass(), floatingWindow.getArguments());
+                floatingWindow = null;
+            }
+
+            /**
+             * 启动悬浮窗
+             *
+             * @param toFragment
+             */
+            public void startFloatingWindow(Class<?> toFragment, Bundle... bundles) {
                 if (activity == null) {
                     activity = GT_Fragment.gt_fragment.getActivity();
                 }
 
                 if (activity != null) {
-                    if (Build.VERSION.SDK_INT >= 23) {
-                        if (!Settings.canDrawOverlays(activity)) {
-                            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + activity.getPackageName()));
-                            FragmentActivity fragmentActivity = (FragmentActivity) activity;
-                            fragmentActivity.startActivityForResult(intent, 0);
-                        } else {
-                            activity.startService(new Intent(activity, toFragment));
-                        }
-                    } else {
-                        activity.startService(new Intent(activity, toFragment));
-                    }
+                    GT.startFloatingWindow(activity, toFragment, bundles);
                 }
+            }
+
+            /**
+             * 启动悬浮窗
+             *
+             * @param toFragment
+             */
+            public void startFloatingWindow(GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+                startFloatingWindow(floatingWindow.getClass(), floatingWindow.getArguments());
+                floatingWindow = null;
             }
 
             //是否解决EditText bug
@@ -32812,15 +32825,27 @@ public class GT {
             private boolean isDrag = false;                      //是否可拖动
             private static boolean isShow = true;                //是否显示
             private String cacheKey;//缓存标识
-            private static int type_screenType = -1079;          //创建屏幕的类型,默认是使用用户设置的Xml宽高
-            private final static int type_self_adaption = -1;    //自适应
-            private final static int type_portraitScreen = 0;    //竖屏
-            private final static int type_landscape = 1;         //横屏
-            private final static int type_screen = 2;            //自适应半屏
-            private final static int type_fullScreen = 3;        //自适应全屏
+            final static int TYPE_SELF_ADAPTION = -1;    //自适应
+            public final static int TYPE_DEFAULT = -1079;    //创建屏幕的类型,默认是使用用户设置的Xml宽高
+            public final static int TYPE_PORTRAIT_SCREEN = 0;    //竖屏
+            public final static int TYPE_LANDSCAPE = 1;         //横屏
+            public final static int TYPE_SCREEN = 2;            //自适应半屏
+            public final static int TYPE_FULL_SCREEN = 3;        //自适应全屏
+
+            private static int TYPE_SCREEN_TYPE = TYPE_DEFAULT;          //创建屏幕的类型,默认是使用用户设置的Xml宽高
 
             private static double screenSizeCoefficient = 1.8;     //屏幕大小系数,系数越大，创建屏幕越小 注意：该系数不能 <= 0
 
+            private Bundle mArguments;
+            public void setArguments(@Nullable Bundle args) {
+                mArguments = args;
+            }
+
+            @Nullable
+            final public Bundle getArguments() {
+                return mArguments;
+            }
+            
             //是否缓存开启数据
             protected boolean isCacheData() {
                 return false;
@@ -32899,8 +32924,8 @@ public class GT {
                 BaseFloatingWindow.screenSizeCoefficient = screenSizeCoefficient;
             }
 
-            public static int getType_screenType() {
-                return type_screenType;
+            public static int getTypeScreenType() {
+                return TYPE_SCREEN_TYPE;
             }
 
             /**
@@ -32911,10 +32936,10 @@ public class GT {
              * 自适应半屏：2
              * 自适应全屏：3
              *
-             * @param type_screenType 创建屏幕类型
+             * @param typeScreenType 创建屏幕类型
              */
-            public static void setType_screenType(int type_screenType) {
-                BaseFloatingWindow.type_screenType = type_screenType;
+            public static void setTypeScreenType(int typeScreenType) {
+                BaseFloatingWindow.TYPE_SCREEN_TYPE = typeScreenType;
             }
 
             public boolean isDrag() {
@@ -33108,10 +33133,10 @@ public class GT {
              * 设置屏幕大小、方向
              */
             private void setScreenSize() {
-                if (type_screenType != -1079) {
+                if (TYPE_SCREEN_TYPE != TYPE_DEFAULT) {
                     //自适应设置窗口大小，方向
-                    switch (type_screenType) {
-                        case type_portraitScreen://竖屏
+                    switch (TYPE_SCREEN_TYPE) {
+                        case TYPE_PORTRAIT_SCREEN://竖屏
                             if (width > height) {
                                 layoutParams.width = (int) (width / (2 * screenSizeCoefficient));
                                 layoutParams.height = (int) (height / screenSizeCoefficient);
@@ -33121,7 +33146,7 @@ public class GT {
                             }
                             break;
 
-                        case type_landscape://横屏
+                        case TYPE_LANDSCAPE://横屏
                             if (width > height) {
                                 layoutParams.width = (int) (width / screenSizeCoefficient);
                                 layoutParams.height = (int) (height / screenSizeCoefficient);
@@ -33131,7 +33156,7 @@ public class GT {
                             }
                             break;
 
-                        case type_screen://自适应半屏
+                        case TYPE_SCREEN://自适应半屏
                             if (width > height) {
                                 layoutParams.width = (int) (width / screenSizeCoefficient);
                                 layoutParams.height = height;
@@ -33141,12 +33166,12 @@ public class GT {
                             }
                             break;
 
-                        case type_fullScreen://自适应全屏
+                        case TYPE_FULL_SCREEN://自适应全屏
                             layoutParams.width = width;
                             layoutParams.height = height;
                             break;
 
-                        case type_self_adaption://自适应
+                        case TYPE_SELF_ADAPTION://自适应
                             layoutParams.width = (int) (width / screenSizeCoefficient);
                             layoutParams.height = (int) (height / screenSizeCoefficient);
                             break;
@@ -33273,6 +33298,9 @@ public class GT {
 
             @Override
             public int onStartCommand(Intent intent, int flags, int startId) {
+                if(intent != null){
+                    mArguments = intent.getExtras();
+                }
                 loadData(this, intent, view);
                 return super.onStartCommand(intent, flags, startId);
             }
@@ -33283,9 +33311,8 @@ public class GT {
              * @param context
              * @param toFragment
              */
-            public void startFloatingWindow(Context context, Class<?> toFragment) {
-                startService(new Intent(context, toFragment));
-
+            public void startFloatingWindow(Context context, Class<?> toFragment, Bundle... bundles) {
+                GT.startFloatingWindow(context, toFragment, bundles);
             }
 
             /**
@@ -33293,8 +33320,28 @@ public class GT {
              *
              * @param toFragment
              */
-            public void startFloatingWindow(Class<?> toFragment) {
-                startService(new Intent(this, toFragment));
+            public void startFloatingWindow(Context context, GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+                startFloatingWindow(context, floatingWindow.getClass(), floatingWindow.getArguments());
+                floatingWindow = null;
+            }
+
+            /**
+             * 启动悬浮窗
+             *
+             * @param toFragment
+             */
+            public void startFloatingWindow(Class<?> toFragment, Bundle... bundles) {
+                GT.startFloatingWindow(this, toFragment, bundles);
+            }
+
+            /**
+             * 启动悬浮窗
+             *
+             * @param toFragment
+             */
+            public void startFloatingWindow(GT_FloatingWindow.BaseFloatingWindow floatingWindow) {
+                startFloatingWindow(floatingWindow.getClass(), floatingWindow.getArguments());
+                floatingWindow = null;
             }
 
             public static void startView(ViewGroup viewGroup, GT_View.BaseView view) {
@@ -33482,6 +33529,17 @@ public class GT {
             public Context context;
             private String cacheKey;//缓存标识
 
+            private Bundle mArguments;
+            public void setArguments(@Nullable Bundle args) {
+                GT.logt("设置值:" + args);
+                mArguments = args;
+            }
+
+            @Nullable
+            final public Bundle getArguments() {
+                return mArguments;
+            }
+
             //是否缓存开启数据
             protected boolean isCacheData() {
                 return false;
@@ -33504,15 +33562,28 @@ public class GT {
             }
 
             public BasePopupWindow() {
+                if(context == null){
+                    context = GT.getActivity();
+                }
+                onCreate(context, mArguments);
+            }
 
+            public BasePopupWindow(Context context, Bundle bundle) {
+                onCreate(context, bundle);
             }
 
             public BasePopupWindow(Context context) {
+                onCreate(context, mArguments);
+            }
+
+            public void onCreate(Context context, Bundle bundle){
                 buildData();
                 if (layout <= 0) {
                     layout = loadLayout();
                 }
+                if(layout <= 0) return;
                 this.context = context;
+                mArguments = bundle;
                 view = LayoutInflater.from(context).inflate(layout, null, false);
                 popWindow = new PopupWindow(view, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, true);
 
@@ -33736,6 +33807,10 @@ public class GT {
                 super(context);
             }
 
+            public AnnotationPopupWindow(Context context, Bundle bundle) {
+                super(context, bundle);
+            }
+
             public void setLayout(int resLayout) {
                 layout = resLayout;
             }
@@ -33774,6 +33849,9 @@ public class GT {
                 super(context);
             }
 
+            public DataBindingPopupWindow(Context context, Bundle bundle) {
+                super(context, bundle);
+            }
         }
 
     }
@@ -33811,6 +33889,7 @@ public class GT {
             private View view;
             protected int layout;
             public Context context;
+            private Bundle mArguments;
             protected GT_Animation animation = GT_Animation.getDefault();
 
             //默认显示隐藏动画
@@ -33832,6 +33911,14 @@ public class GT {
                 this.time = time;
             }
 
+            @Nullable
+            final public Bundle getArguments() {
+                return mArguments;
+            }
+
+            public void setArguments(@Nullable Bundle args) {
+                mArguments = args;
+            }
 
             /**
              * 设置隐藏背景
@@ -34024,7 +34111,7 @@ public class GT {
                 init(context, null);
             }
 
-            private void init(Context context, ViewGroup viewGroup) {
+            public void init(Context context, ViewGroup viewGroup) {
                 if (context == null) return;
                 bingData();
                 this.context = context;
@@ -35816,6 +35903,16 @@ public class GT {
             private long time;
             public int NOTIFYID = 0x1079; //通知id
             private String cacheKey;//缓存标识
+            private Bundle mArguments;
+
+            public void setArguments(@Nullable Bundle args) {
+                mArguments = args;
+            }
+
+            @Nullable
+            final public Bundle getArguments() {
+                return mArguments;
+            }
 
             //是否缓存开启数据
             protected boolean isCacheData() {
@@ -35909,6 +36006,15 @@ public class GT {
             }
 
             public BaseNotification(Context context) {
+                onCreate(context);
+            }
+
+            public BaseNotification(Context context, Bundle bundles) {
+                mArguments = bundles;
+                onCreate(context);
+            }
+
+            public void onCreate(Context context){
                 this.context = context;
                 builder = new NotificationCompat.Builder(context);
                 bingData();
@@ -35921,7 +36027,7 @@ public class GT {
                 getCache(GT_Cache.getCacheData(cacheKey, String.class));//获取缓存数据
                 loadData(context);
             }
-
+            
             /**
              * 设置属性
              *
@@ -36227,6 +36333,11 @@ public class GT {
                 registerNotificationReceiver(context);
             }
 
+            public AnnotationNotification(Context context, Bundle bundle) {
+                super(context, bundle);
+                registerNotificationReceiver(context);
+            }
+
             private int[] clickViews;
 
             //注册通知广播
@@ -36369,7 +36480,9 @@ public class GT {
                 super(context);
             }
 
-
+            public DataBindingNotification(Context context, Bundle bundle) {
+                super(context, bundle);
+            }
         }
 
         /**
@@ -43079,21 +43192,90 @@ public class GT {
                 if (LOG.GT_LOG_TF) {
                     GT.errt("e:" + e);
                 }
-//                e.printStackTrace();
             }
             try {
                 if (clazz == null) return null;
                 obj = clazz.newInstance();
             } catch (IllegalAccessException e) {
                 GT.errt("e:" + e);
-//                e.printStackTrace();
             } catch (InstantiationException e) {
                 GT.errt("e:" + e);
-//                e.printStackTrace();
             }
             return obj;
         }
 
+
+        /**
+         *
+         * 解析 class 反射 Object ，带参数的构造方法
+         * @param obj 反射类 class
+         * @param valueTypes 构造参数类型
+         * @param objs  构造参数
+         * @return
+         * @param <T>
+         */
+        public static <T> Object classToObject(Object obj, Class<?>[] valueTypes, Object[] objs) {
+            String data = String.valueOf(obj);
+            if (data.contains("java.util.List")) {
+                return new ArrayList<Object>();
+            }
+            String[] strs = obj.toString().split(" ");
+            String str = "";
+            if (strs.length == 2) {
+                str = strs[1];
+            } else {
+                str = obj.toString();
+            }
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName(str);
+            } catch (ClassNotFoundException e) {
+                if (LOG.GT_LOG_TF) {
+                    GT.errt("e:" + e);
+                }
+            }
+            try {
+                if (clazz == null) return null;
+                // 获取指定参数类型的构造方法
+                Constructor<?> constructor = clazz.getConstructor(valueTypes);
+                // 使用构造方法创建对象，并传入参数
+                obj = constructor.newInstance(objs);
+            } catch (NoSuchMethodException e) {
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+            return obj;
+        }
+
+        /**
+         * 解析 class 反射 Object ，带参数的构造方法
+         * @param clazz 反射类 class
+         * @param valueTypes 构造参数类型
+         * @param objs  构造参数
+         * @return
+         * @param <T>
+         */
+        public static <T> Object classToObject(Class<T> clazz, Class<?>[] valueTypes, Object[] objs) {
+            try {
+                // 获取指定参数类型的构造方法
+                Constructor<?> constructor = clazz.getConstructor(valueTypes);
+                // 使用构造方法创建对象，并传入参数
+                return constructor.newInstance(objs);
+            } catch (NoSuchMethodException e) {
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            }
+            return null;
+        }
+        
         /**
          * 解析 class 反射 Object
          *

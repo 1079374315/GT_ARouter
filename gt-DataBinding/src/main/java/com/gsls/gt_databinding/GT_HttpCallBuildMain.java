@@ -125,7 +125,7 @@ public class GT_HttpCallBuildMain extends AbstractProcessor {
 
             //生成包名
             StringBuilder builder = new StringBuilder();
-            builder.append("package " + bindingBean.getPackName() + ";\n\n");
+            builder.append("package " + bindingBean.getResourcePackName() + ";\n\n");
 
             builder.append("\n");//导入的包与逻辑代码换行
 
@@ -178,7 +178,7 @@ public class GT_HttpCallBuildMain extends AbstractProcessor {
 
             //生成最终添加好的代码
             try {
-                JavaFileObject source = processingEnv.getFiler().createSourceFile(bindingBean.getPackName() + "." + bindingBean.getClassName() + "Binding");
+                JavaFileObject source = processingEnv.getFiler().createSourceFile(bindingBean.getResourcePackName() + "." + bindingBean.getClassName() + "Binding");
                 Writer writer = source.openWriter();
                 writer.write(builder.toString());
                 writer.flush();

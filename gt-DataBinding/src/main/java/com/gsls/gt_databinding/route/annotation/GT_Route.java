@@ -23,7 +23,7 @@ public @interface GT_Route {
     /**
      * 注释
      */
-    String extras() default "路由信息";
+    String extras() default "GT库，不止这一个好用的库 官网: https://github.com/1079374315/GT";
 
 
 

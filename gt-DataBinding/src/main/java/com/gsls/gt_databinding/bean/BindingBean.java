@@ -1,8 +1,9 @@
 package com.gsls.gt_databinding.bean;
 
-import com.gsls.gt_databinding.utils.ClassType;
+import com.gsls.gt_databinding.route.ClassType;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -197,6 +198,9 @@ public class BindingBean {
                 ", objectClass=" + objectClass +
                 ", packClassPath='" + packClassPath + '\'' +
                 ", layoutName='" + layoutName + '\'' +
+                ", extras='" + extras + '\'' +
+                ", isAsync=" + isAsync +
+                ", interceptors=" + Arrays.toString(interceptors) +
                 ", layoutPath='" + layoutPath + '\'' +
                 ", classPath='" + classPath + '\'' +
                 ", layoutAbsolutePath='" + layoutAbsolutePath + '\'' +
@@ -205,7 +209,6 @@ public class BindingBean {
                 ", xmlBeanList=" + xmlBeanList +
                 ", classCode='" + "classCode" + '\'' +
                 ", classType=" + classType +
-                ", extras=" + extras +
                 ", annotateValue=" + annotateValue +
                 '}';
     }

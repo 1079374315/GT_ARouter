@@ -29,20 +29,27 @@ public class ModelActivity2 extends GT.GT_Activity.AnnotationActivity {
         setContentView(R.layout.activity_model2);
         GT.logt("初始化 ModelActivity2");
 
-        Fragment modelFragment = ARouter.getInstance()
-                .build(Config.Model1Config.ModelFragment1.MAIN)
-                .withObject("name", "ModelFragment1 名字")
-                .navigation();
-
         Fragment demoFragment = ARouter.getInstance()
                 .build(Config.DemoFragment1.MAIN)
                 .withObject("name", "DemoFragment1 名字")
                 .greenChannal()
                 .navigation();
 
+        GT.logt("demoFragment:" + demoFragment);
+
+        Fragment modelFragment = ARouter.getInstance()
+                .build(Config.Model1Config.ModelFragment1.MAIN)
+                .withObject("name", "ModelFragment1 名字")
+                .navigation();
+
+        GT.logt("modelFragment:" + modelFragment);
+
+
+
         findViewById(R.id.tv).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                GT.logt("单击了 modelFragment:" + modelFragment);
                 gt_fragment.addCommit(R.id.fcv, modelFragment);
             }
         });
@@ -50,6 +57,8 @@ public class ModelActivity2 extends GT.GT_Activity.AnnotationActivity {
         findViewById(R.id.tv_getFragment).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                GT.logt("单击了 demoFragment:" + demoFragment);
                 gt_fragment.addCommit(R.id.fcv, demoFragment);
             }
         });

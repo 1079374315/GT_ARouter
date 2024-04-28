@@ -9,12 +9,21 @@ public interface Config {
 
         String LIB1_SERVICE_IMPL_SAY_HELLO = "/app/Lib1ServiceImpl/sayHello";
 
+        String BASE_VIEW = "/app/AgeView/";
+
+        String DIALOG = "/app/DemoDialog/";
+        String FLOATING = "/app/Floating/";
+
+        String VIEW = "/app/CircleView/";
+
+        String POPUP_WINDOW = "/app/PopupWindow/";
+
+        String NOTIFICATION = "/app/Notification/";
+
     }
 
     interface DemoFragment1{
         String MAIN = "/app/DemoFragment/";
-        String keyBBB = "bbb";
-        String keyAAA = "aaa";
     }
 
 
@@ -43,7 +52,7 @@ public interface Config {
     }
 
     interface TestInterceptor{
-        String MAIN = "/model2/TestInterceptor";
+        String MAIN = "/model2/TestInterceptor/";
     }
 
     interface TestInterceptor2{

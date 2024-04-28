@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -8,9 +9,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
-import com.example.myapplication.bean.Project;
+import com.example.myapplication.floating_window.RulerFloating;
+import com.example.myapplication.notification.NotificationDemo;
+import com.example.myapplication.popupwindow.ScanQRCodesPopupWindow;
+import com.example.myapplication.view.CircleView;
 import com.gsls.gt.GT;
 import com.gsls.gt_databinding.route.annotation.GT_Route;
+import com.gsls.toolkit.GT_Floating;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +45,6 @@ public class JavaActivity extends AppCompatActivity {
                     .withObject(Config.Model1Config.ModelActivity1.keyAAA, "我是JavaActivity参数")
                     .withObject(Config.Model1Config.ModelActivity1.keyList, list)
                     .withObject(Config.Model1Config.ModelActivity1.keyMap, map)
-                    .withTransition(com.example.baselibrary.R.anim.bottom_in, com.example.baselibrary.R.anim.bottom_out, com.example.baselibrary.R.anim.bottom_in, com.example.baselibrary.R.anim.bottom_out)
                     .greenChannal()
                     .navigation();
 
@@ -48,7 +52,10 @@ public class JavaActivity extends AppCompatActivity {
 
         findViewById(R.id.btn2).setOnClickListener(v -> {
             GT.logt("单击跳转2");
-            startActivity(new Intent(JavaActivity.this, MainActivity.class));
+            //创建并发布 通知栏
+            new NotificationDemo(this, null).commit();
+
+//            startActivity(new Intent(JavaActivity.this, MainActivity.class));
         });
 
     }

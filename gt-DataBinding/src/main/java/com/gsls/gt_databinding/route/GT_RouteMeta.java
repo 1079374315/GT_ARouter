@@ -1,7 +1,5 @@
 package com.gsls.gt_databinding.route;
 
-import com.gsls.gt_databinding.utils.ClassType;
-
 import java.util.Arrays;
 
 public class GT_RouteMeta {

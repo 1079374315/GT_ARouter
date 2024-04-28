@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.ArrayMap;
+import android.view.View;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.gsls.gt.GT;
@@ -17,7 +19,6 @@ import com.gsls.gt_databinding.route.annotation.GT_ARouterName;
 import com.gsls.gt_databinding.route.annotation.GT_Autowired;
 import com.gsls.gt_databinding.route.annotation.GT_Route;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
@@ -27,7 +28,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import dalvik.system.DexFile;
 
@@ -35,7 +35,6 @@ import dalvik.system.DexFile;
 public class ARouter {
 
     private static boolean isDebugARouter = false;//ARouter调试开关
-    private static boolean isLog = false;//是否显示内部日志
     private volatile static ARouter instance = null;//路由
     private static final Map<String, GT_RouteMeta> aRouterMap = new ArrayMap<>();//路由容器
     private static final Map<String, Object> aRouterStickyMap = new ArrayMap<>();//临时粘性参数事件
@@ -112,7 +111,6 @@ public class ARouter {
                 }
             }
         }
-        instance.aRouterBean = null;
         return instance;
     }
 
@@ -122,7 +120,7 @@ public class ARouter {
      * @param object
      * @return
      */
-    public ARouter inject(Object object) {
+    public ARouter inject(Object object, String... gtRoutePaths) {
         Context context = softReference.get();
         //路由检查是否自动依赖注入值
         Field[] fields = object.getClass().getDeclaredFields();//获致当前 Activity 所有成员变更
@@ -139,19 +137,26 @@ public class ARouter {
             try {
 
                 //获取当前注解类路由路径 作为依赖注解参数的 前缀 key
-                GT_Route gtRoute = object.getClass().getAnnotation(GT_Route.class);
                 String gtRoutePath = "";
-                if(gtRoute != null){
-                    String value1 = gtRoute.value();
-                    if(value1 != null){
-                        gtRoutePath += value1;
+                boolean isRemove = true;//是否注解参数自动释放
+                if (gtRoutePaths != null && gtRoutePaths.length != 0 && gtRoutePaths[0] != null) {
+                    gtRoutePath = gtRoutePaths[0];
+                    isRemove = false;
+                }
+
+                if (gtRoutePath.isEmpty()) {
+                    GT_Route gtRoute = object.getClass().getAnnotation(GT_Route.class);
+                    if (gtRoute != null) {
+                        gtRoutePath = gtRoute.value();
                     }
                 }
 
                 //要保证，主动传参优先级大于一切架构赋值
                 if (aRouterStickyMap.containsKey(gtRoutePath + name)) {
                     value = aRouterStickyMap.get(gtRoutePath + name);
-                    aRouterStickyMap.remove(gtRoutePath + name);//移除已使用的
+                    if (isRemove) {
+                        aRouterStickyMap.remove(gtRoutePath + name);
+                    }
                 } else if (aRouterMap.containsKey(name)) {//判断是否依赖 路由路径来自动注入
                     GT_RouteMeta gtRouteMeta = aRouterMap.get(name);
                     if (gtRouteMeta != null && gtRouteMeta.getDestination() != null) {
@@ -185,14 +190,50 @@ public class ARouter {
     }
 
     /**
+     * 手动释放依赖注解资源
+     *
+     * @param object
+     * @return
+     */
+    public ARouter unregister(Object object) {
+        //路由检查是否自动依赖注入值
+        Field[] fields = object.getClass().getDeclaredFields();//获致当前 Activity 所有成员变更
+        for (Field field : fields) {
+            GT_Autowired annotation = field.getAnnotation(GT_Autowired.class);
+            if (annotation == null) continue;
+            String name = annotation.value();
+            //如果 注解里的key为空，那就直接用当前变量名作为key
+            if (name == null || name.isEmpty()) {
+                name = field.getName();
+            }
+            try {
+                //获取当前注解类路由路径 作为依赖注解参数的 前缀 key
+                String gtRoutePath = "";
+                GT_Route gtRoute = object.getClass().getAnnotation(GT_Route.class);
+                if (gtRoute != null) {
+                    gtRoutePath = gtRoute.value();
+                }
+                aRouterStickyMap.remove(gtRoutePath + name);
+            } catch (Exception e) {
+                if (GT.LOG.GT_LOG_TF) {
+                    GT.errs("类型有不匹配的 e:" + e);
+                }
+            }
+
+        }
+        return this;
+    }
+
+
+    /**
      * 销毁路由所有资源
      *
      * @return
      */
     public ARouter destroy() {
         clear();
-        softReference.clear();
-        aRouterMap.clear();
+        if (softReference != null) softReference.clear();
+        if (aRouterMap != null) aRouterMap.clear();
         instance = null;
         return this;
     }
@@ -201,13 +242,14 @@ public class ARouter {
      * 清空路由 可清空缓存数据
      * 该方法请谨慎使用，会将路由传参也清理掉，
      * 若你确定没有传参缓存，即可使用
+     *
      * @return
      */
     public ARouter clear() {
-        aRouterBean = null;
-        aRouterStickyMap.clear();
-        softReferenceActivity.clear();
-        softReferenceNavigationCallback.clear();
+        aRouterBean = null;//2
+        if (aRouterStickyMap != null) aRouterStickyMap.clear();
+        if (softReferenceActivity != null) softReferenceActivity.clear();
+        if (softReferenceNavigationCallback != null) softReferenceNavigationCallback.clear();
         return this;
     }
 
@@ -329,6 +371,7 @@ public class ARouter {
             if (GT.ARouter.IProvider.class.isAssignableFrom(cla)) {
                 for (String key : aRouterMap.keySet()) {
                     GT_RouteMeta gtRouteMeta = aRouterMap.get(key);
+                    if (gtRouteMeta == null) continue;
                     if (cla.isAssignableFrom(gtRouteMeta.getDestination())) {
                         T value = (T) GT.AnnotationAssist.classToObject(gtRouteMeta.getDestination());
                         Context context = softReference.get();
@@ -340,6 +383,19 @@ public class ARouter {
                 }
             }
         }
+        //否则就执行 路由基本逻辑
+        return navigation();
+    }
+
+    /**
+     * 启动拦截器
+     *
+     * @param interceptorCallback 拦截器监听
+     * @param <T>
+     * @return
+     */
+    public <T> T navigation(GT.ARouter.InterceptorCallback interceptorCallback) {
+        softReferenceNavigationCallback = new SoftReference(interceptorCallback);
         //否则就执行 路由基本逻辑
         return navigation();
     }
@@ -361,6 +417,13 @@ public class ARouter {
         return navigation();
     }
 
+    public <T> T navigation(Activity activity) {
+        softReferenceActivity = new SoftReference(activity);
+        //否则就执行 路由基本逻辑
+        return navigation();
+    }
+
+
     public <T> T navigation() {
         if (aRouterBean == null) return null;
         GT_RouteMeta gt_routeMeta = aRouterMap.get(aRouterBean.path);
@@ -377,7 +440,7 @@ public class ARouter {
             context = softReference.get();
         }
 
-//        try {
+        try {
             //如果使用注解传递，那就进行 监听者消息 方法传递
             Map<String, Object> paramsType = aRouterBean.getParamsType();
             if (paramsType != null && !paramsType.keySet().isEmpty()) {
@@ -389,40 +452,83 @@ public class ARouter {
 
             boolean isAbort;//默认不拦截
             switch (gt_routeMeta.getType()) {
-                case ACTIVITY:
-                    isAbort = loadInterceptor(context, gt_routeMeta);//加载拦截器
-                    GT.logt("是否拦截:" + isAbort);
-                    if (!isAbort) {
-                        setActivity(context, gt_routeMeta);//处理 Activity 路由逻辑
-                    }
-                    break;
-                case FRAGMENT, FRAGMENT_X:
+                case ACTIVITY, VIEW,
+                        FRAGMENT, FRAGMENT_X,
+                        DIALOG_FRAGMENT, DIALOG_FRAGMENT_X,
+                        BASE_VIEW, FLOATING_WINDOW, POPUP_WINDOW, NOTIFICATION, PROVIDER://需要添加拦截器的
                     isAbort = loadInterceptor(context, gt_routeMeta);//加载拦截器
                     if (!isAbort) {
-                        Fragment fragment;
-                        fragment = setFragment(gt_routeMeta);//处理 Fragment 路由逻辑
-                        if (fragment != null) {
-                            aRouterBean = null;
-                            return (T) fragment;
+                        switch (gt_routeMeta.getType()) {
+                            case ACTIVITY:
+                                setActivity(context, gt_routeMeta);//处理 路由逻辑
+                                break;
+                            case VIEW:
+                                View view;
+                                view = setView(gt_routeMeta);//处理 路由逻辑
+                                if (view != null) {
+                                    aRouterBean = null;
+                                    return (T) view;
+                                }
+                                break;
+                            case FRAGMENT, FRAGMENT_X:
+                                Fragment fragment;
+                                fragment = setFragment(gt_routeMeta);//处理 路由逻辑
+                                if (fragment != null) {
+                                    aRouterBean = null;
+                                    return (T) fragment;
+                                }
+                            case DIALOG_FRAGMENT, DIALOG_FRAGMENT_X:
+                                DialogFragment dialogFragment;
+                                dialogFragment = setDialogFragment(gt_routeMeta);//处理 路由逻辑
+                                if (dialogFragment != null) {
+                                    aRouterBean = null;
+                                    return (T) dialogFragment;
+                                }
+                            case BASE_VIEW:
+                                GT.GT_View.BaseView baseView;
+                                baseView = setBaseView(gt_routeMeta);//处理 路由逻辑
+                                if (baseView != null) {
+                                    aRouterBean = null;
+                                    return (T) baseView;
+                                }
+                            case FLOATING_WINDOW://悬浮窗
+                                GT.GT_FloatingWindow.BaseFloatingWindow floatingWindow;
+                                floatingWindow = setFloatingWindow(gt_routeMeta);//处理 路由逻辑
+                                if (floatingWindow != null) {
+                                    aRouterBean = null;
+                                    return (T) floatingWindow;
+                                }
+                            case POPUP_WINDOW://悬浮窗
+                                GT.GT_PopupWindow.BasePopupWindow popupWindow;
+                                popupWindow = setPopupWindow(gt_routeMeta);//处理 路由逻辑
+                                if (popupWindow != null) {
+                                    aRouterBean = null;
+                                    return (T) popupWindow;
+                                }
+
+                            case NOTIFICATION://悬浮窗
+                                GT.GT_Notification.BaseNotification notification;
+                                notification = setNotification(gt_routeMeta);//处理 路由逻辑
+                                if (notification != null) {
+                                    aRouterBean = null;
+                                    return (T) notification;
+                                }
+                            case PROVIDER://接口方法、传值、传参
+                                Object obj;
+                                obj = setProvider(context, gt_routeMeta);//处理 接口方法 路由逻辑
+                                if (obj != null) {
+                                    aRouterBean = null;
+                                    return (T) obj;
+                                }
                         }
                     }
-                    aRouterBean = null;
-                    return null;
-                case PROVIDER://接口方法、传值、传参
-                    isAbort = loadInterceptor(context, gt_routeMeta);//加载拦截器
-                    if (!isAbort) {
-                        Object obj;
-                        obj = setProvider(context, gt_routeMeta);//处理 接口方法 路由逻辑
-                        if (obj != null) {
-                            aRouterBean = null;
-                            return (T) obj;
-                        }
-                    }
-                    aRouterBean = null;
+                    aRouterBean = null;//1
                     return null;
                 case INTERCEPTOR://直接跳转拦截器
-
-                    break;
+                    startInterceptor(context, gt_routeMeta);//加载拦截器
+                    aRouterBean = null;//1
+                    return null;
+                //待实现
                 case SERVICE:
                     break;
                 case CONTENT_PROVIDER:
@@ -430,10 +536,12 @@ public class ARouter {
                 case UNKNOWN:
                     break;
             }
-        /*} catch (Exception e) {
-            GT.err("e:" + e);
-        }*/
-        aRouterBean = null;
+        } catch (Exception e) {
+            if (ARouter.isDebugARouter) {
+                GT.err(" e:" + e);
+            }
+        }
+        aRouterBean = null;//9
         return (T) gt_routeMeta;
     }
 
@@ -457,11 +565,30 @@ public class ARouter {
             //动态添加 转场
             if (aRouterBean.enterAnim != ARouterBean.INDEX_DEFAULT && aRouterBean.exitAnim != ARouterBean.INDEX_DEFAULT) {
                 ActivityOptions options = ActivityOptions.makeCustomAnimation(context, aRouterBean.enterAnim, aRouterBean.exitAnim);
-                context.startActivity(intent, options.toBundle());
+                try {
+                    context.startActivity(intent, options.toBundle());
+                } catch (Exception e) {
+                    context.startActivity(intent);
+                }
             } else {
                 context.startActivity(intent);
             }
         }
+    }
+
+    private DialogFragment setDialogFragment(GT_RouteMeta gt_routeMeta) {
+        DialogFragment dialogFragment = null;
+        try {
+            Object obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath());
+            if (obj instanceof DialogFragment) {
+                dialogFragment = (DialogFragment) obj;
+                Bundle bundle = new Bundle();
+                setFragmentParams(bundle);
+                dialogFragment.setArguments(bundle);
+            }
+        } catch (Exception e) {
+        }
+        return dialogFragment;
     }
 
     private Fragment setFragment(GT_RouteMeta gt_routeMeta) {
@@ -480,6 +607,100 @@ public class ARouter {
         return fragment;
     }
 
+    private View setView(GT_RouteMeta gt_routeMeta) {
+        try {
+            Object obj;
+            if (aRouterBean != null && aRouterBean.getBundleParams() != null && !aRouterBean.getBundleParams().isEmpty()) {//是否传递参数 Bundle
+                Bundle bundle = new Bundle();
+                setFragmentParams(bundle);
+                obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath(), new Class[]{Context.class, Bundle.class}, new Object[]{softReference.get(), bundle});
+            } else {//没有传递 Bundle 参数
+                obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath(), new Class[]{Context.class}, new Object[]{softReference.get()});
+            }
+            if (obj instanceof View) {
+                return (View) obj;
+            }
+        } catch (Exception e) {
+            GT.errt("e:" + e);
+        }
+        return null;
+    }
+
+    private GT.GT_View.BaseView setBaseView(GT_RouteMeta gt_routeMeta) {
+        GT.GT_View.BaseView baseView = null;
+        try {
+            Object obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath());
+            if (obj instanceof GT.GT_View.BaseView) {
+                baseView = (GT.GT_View.BaseView) obj;
+                Bundle bundle = new Bundle();
+                setFragmentParams(bundle);
+                baseView.setArguments(bundle);
+            }
+        } catch (Exception e) {
+            GT.errt("e:" + e);
+        }
+        return baseView;
+    }
+
+    private GT.GT_FloatingWindow.BaseFloatingWindow setFloatingWindow(GT_RouteMeta gt_routeMeta) {
+        GT.GT_FloatingWindow.BaseFloatingWindow floatingWindow = null;
+        try {
+            Object obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath());
+            if (obj instanceof GT.GT_FloatingWindow.BaseFloatingWindow) {
+                floatingWindow = (GT.GT_FloatingWindow.BaseFloatingWindow) obj;
+                Bundle bundle = new Bundle();
+                setFragmentParams(bundle);
+                floatingWindow.setArguments(bundle);
+            }
+        } catch (Exception e) {
+            GT.errt("e:" + e);
+        }
+        return floatingWindow;
+
+    }
+
+    private GT.GT_PopupWindow.BasePopupWindow setPopupWindow(GT_RouteMeta gt_routeMeta) {
+        GT.GT_PopupWindow.BasePopupWindow popupWindow = null;
+        try {
+            Object obj;
+            if (aRouterBean != null && aRouterBean.getBundleParams() != null && !aRouterBean.getBundleParams().isEmpty()) {//是否传递参数 Bundle
+                Bundle bundle = new Bundle();
+                setFragmentParams(bundle);
+                obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath(), new Class[]{Context.class, Bundle.class}, new Object[]{softReference.get(), bundle});
+            } else {//没有传递 Bundle 参数
+                obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath(), new Class[]{Context.class}, new Object[]{softReference.get()});
+            }
+            if (obj instanceof GT.GT_PopupWindow.BasePopupWindow) {
+                popupWindow = (GT.GT_PopupWindow.BasePopupWindow) obj;
+            }
+        } catch (Exception e) {
+            GT.errt("e:" + e);
+        }
+        return popupWindow;
+
+    }
+
+    private GT.GT_Notification.BaseNotification setNotification(GT_RouteMeta gt_routeMeta) {
+        GT.GT_Notification.BaseNotification notification  = null;
+        try {
+            Object obj;
+            if (aRouterBean != null && aRouterBean.getBundleParams() != null && !aRouterBean.getBundleParams().isEmpty()) {//是否传递参数 Bundle
+                Bundle bundle = new Bundle();
+                setFragmentParams(bundle);
+                obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath(), new Class[]{Context.class, Bundle.class}, new Object[]{softReference.get(), bundle});
+            } else {//没有传递 Bundle 参数
+                obj = GT.AnnotationAssist.classToObject(gt_routeMeta.getPackClassPath(), new Class[]{Context.class}, new Object[]{softReference.get()});
+            }
+            if (obj instanceof GT.GT_Notification.BaseNotification) {
+                notification = (GT.GT_Notification.BaseNotification) obj;
+            }
+        } catch (Exception e) {
+            GT.errt("e:" + e);
+        }
+        return notification;
+
+    }
+
     private Object setProvider(Context context, GT_RouteMeta gt_routeMeta) {
         Object obj = null;
         try {
@@ -488,6 +709,89 @@ public class ARouter {
         } catch (Exception e) {
         }
         return obj;
+    }
+
+    /**
+     * 启动拦截器
+     *
+     * @param context
+     * @param gt_routeMeta
+     * @return
+     */
+    private boolean startInterceptor(Context context, GT_RouteMeta gt_routeMeta) {
+        //本次跳转 是否存在拦截
+        String[] interceptors = gt_routeMeta.getInterceptors();
+        if (interceptors == null || interceptors.length == 0) return false;//如果没有设置拦截器，那就返回不拦截
+
+        //本次拦截 是否存在监听
+        GT.ARouter.InterceptorCallback interceptorCallback = null;
+        if (softReferenceNavigationCallback != null) {
+            interceptorCallback = softReferenceNavigationCallback.get();
+        }
+
+        //默认不拦截
+        final boolean[] isAbort = {false};
+
+        //传递参数
+        Intent intent = null;
+        if (context instanceof Activity activity) {
+            intent = activity.getIntent();
+        }
+
+        Intent intentBundleParam = setBundleParams(intent);
+        if (intent == null) {
+            intent = intentBundleParam;
+        }
+
+        //按被调用的拦截器遍历顺序处理
+        for (int i = 0; i < interceptors.length; i++) {
+            if (isAbort[0]) break;//如果上个拦截器已拦截，那就直接停止遍历拦截
+            String interceptor = interceptors[i];
+            Object obj;
+            GT_RouteMeta gtRouteMeta = aRouterMap.get(interceptor);//获取这个拦截器的信息
+            try {
+                //实例化拦截器
+                obj = GT.AnnotationAssist.classToObject(gtRouteMeta.getDestination());
+
+                //调用初始化
+                GT.AnnotationAssist.setReflectMethodValue(obj, "init", null, new Class[]{Context.class, String.class}, context, "");
+
+                GT.ARouter.InterceptorCallback finalInterceptorCallback = interceptorCallback;
+                //进行拦截返回
+                int finalI = i;
+                GT.AnnotationAssist.setReflectMethodValue(obj, "process", Boolean.class,
+                        new Class[]{Intent.class, GT.ARouter.InterceptorCallback.class}, intent, new GT.ARouter.InterceptorCallback() {
+                            @Override
+                            public boolean onContinue(Intent intent) {
+                                if (finalI == interceptors.length - 1 && finalInterceptorCallback != null) {
+                                    finalInterceptorCallback.onContinue(intent);
+                                }
+                                if (softReferenceNavigationCallback != null)
+                                    softReferenceNavigationCallback.clear();
+                                return super.onContinue(intent);
+                            }
+
+                            @Override
+                            public boolean onAbort(Intent intent) {
+                                isAbort[0] = true;
+                                if (finalInterceptorCallback != null) {
+                                    finalInterceptorCallback.onAbort(intent);
+                                }
+                                if (softReferenceNavigationCallback != null)
+                                    softReferenceNavigationCallback.clear();
+                                return super.onAbort(intent);
+                            }
+                        });
+
+
+            } catch (Exception e) {
+            }
+
+            if (softReferenceActivity != null) softReferenceActivity.clear();
+            //遍历拦截循环结束
+        }
+
+        return isAbort[0];
     }
 
     /**
@@ -513,32 +817,32 @@ public class ARouter {
 
         //传递参数
         Intent intent = null;
-        if(context instanceof Activity activity){
+        if (context instanceof Activity activity) {
             intent = activity.getIntent();
         }
-        setBundleParams(intent);
-        setParamsType(intent);
 
-        //绿色通道
-        GT.logt("aRouterBean.claIntercepts:" + aRouterBean.claIntercepts);
+        Intent intentBundleParam = setBundleParams(intent);
+        if (intent == null) {
+            intent = intentBundleParam;
+        }
 
         List<String> claInterceptsList = null;
-        if(aRouterBean != null){
+        if (aRouterBean != null) {
             String[] claIntercepts = aRouterBean.claIntercepts;
-            if(claIntercepts != null){
+            if (claIntercepts != null) {
                 claInterceptsList = new ArrayList<>(Arrays.asList(claIntercepts));
-                GT.logt("绿色通道个数:" + claInterceptsList.size());
             }
         }
-        GT.logt("绿色通道:" + claInterceptsList);
 
         //按被调用的拦截器遍历顺序处理
         for (int i = 0; i < interceptors.length; i++) {
             if (isAbort[0]) break;//如果上个拦截器已拦截，那就直接停止遍历拦截
             String interceptor = interceptors[i];
-            if(claInterceptsList != null && interceptor != null){
-                if(claInterceptsList.isEmpty()) break;//全绿色通道
-                else if(claInterceptsList.contains(interceptor)) continue;//跳过绿色通道拦截器
+            if (claInterceptsList != null && interceptor != null) {
+                if (claInterceptsList.isEmpty()) {
+                    if (interceptorCallback != null) interceptorCallback.onContinue(intent);//返回通过拦截
+                    break;//全绿色通道
+                } else if (claInterceptsList.contains(interceptor)) continue;//跳过绿色通道拦截器
             }
             Object obj;
             GT_RouteMeta gtRouteMeta = aRouterMap.get(interceptor);//获取这个拦截器的信息
@@ -546,10 +850,7 @@ public class ARouter {
                 //实例化拦截器
                 obj = GT.AnnotationAssist.classToObject(gtRouteMeta.getDestination());
                 //调用初始化
-                GT.AnnotationAssist.setReflectMethodValue(obj, "init", null, Context.class, context);
-
-                //TODO 这个值，需要调用者传递过来, 调用者传的参数默认为创建 Intent,
-                // 若没有传参，那就默认用 Activity 里的 Intent
+                GT.AnnotationAssist.setReflectMethodValue(obj, "init", null, new Class[]{Context.class, String.class}, context, gt_routeMeta.getPath());
 
                 GT.ARouter.InterceptorCallback finalInterceptorCallback = interceptorCallback;
                 //进行拦截返回
@@ -561,7 +862,8 @@ public class ARouter {
                                 if (finalI == interceptors.length - 1 && finalInterceptorCallback != null) {
                                     finalInterceptorCallback.onContinue(intent);
                                 }
-                                softReferenceNavigationCallback.clear();
+                                if (softReferenceNavigationCallback != null)
+                                    softReferenceNavigationCallback.clear();
                                 return super.onContinue(intent);
                             }
 
@@ -571,7 +873,8 @@ public class ARouter {
                                 if (finalInterceptorCallback != null) {
                                     finalInterceptorCallback.onAbort(intent);
                                 }
-                                softReferenceNavigationCallback.clear();
+                                if (softReferenceNavigationCallback != null)
+                                    softReferenceNavigationCallback.clear();
                                 return super.onAbort(intent);
                             }
                         });
@@ -580,10 +883,9 @@ public class ARouter {
             } catch (Exception e) {
             }
 
-            softReferenceActivity.clear();
+            if (softReferenceActivity != null) softReferenceActivity.clear();
             //遍历拦截循环结束
         }
-
         return isAbort[0];
     }
 
@@ -593,84 +895,12 @@ public class ARouter {
      * @param intent
      */
     private Intent setBundleParams(Intent intent) {
-        if(aRouterBean == null) return intent;
+        if (aRouterBean == null) return intent;
         //如果传递的int是 Bundle 数据，那就通过 ent 传递
         try {
             Map<String, Object> bundleParams = aRouterBean.getBundleParams();
             if (bundleParams != null && !bundleParams.keySet().isEmpty()) {
-                if(intent == null) intent = new Intent();
-                for (String key : bundleParams.keySet()) {
-                    Object object = bundleParams.get(key);
-                    if (object instanceof String) {
-                        intent.putExtra(key, object.toString());
-                    } else if (object instanceof Integer) {
-                        intent.putExtra(key, (Integer) object);
-                    } else if (object instanceof Long) {
-                        intent.putExtra(key, (Long) object);
-                    } else if (object instanceof Float) {
-                        intent.putExtra(key, (Float) object);
-                    } else if (object instanceof Boolean) {
-                        intent.putExtra(key, (Boolean) object);
-                    } else if (object instanceof Double) {
-                        intent.putExtra(key, (Double) object);
-                    } else if (object instanceof Short) {
-                        intent.putExtra(key, (Short) object);
-                    } else if (object instanceof Byte) {
-                        intent.putExtra(key, (Byte) object);
-                    } else if (object instanceof Parcelable) {
-                        intent.putExtra(key, (Parcelable) object);
-                    } else if (object instanceof Serializable) {
-                        intent.putExtra(key, (Serializable) object);
-                    } else if (object instanceof Bundle) {
-                        intent.putExtra(key, (Bundle) object);
-                    } else if (object instanceof Character) {
-                        intent.putExtra(key, (Character) object);
-                    } else if (object instanceof String[]) {
-                        intent.putExtra(key, (String[]) object);
-                    } else if (object instanceof Integer[]) {
-                        intent.putExtra(key, (Integer[]) object);
-                    } else if (object instanceof Float[]) {
-                        intent.putExtra(key, (Float[]) object);
-                    } else if (object instanceof Boolean[]) {
-                        intent.putExtra(key, (Boolean[]) object);
-                    } else if (object instanceof Short[]) {
-                        intent.putExtra(key, (Short[]) object);
-                    } else if (object instanceof Byte[]) {
-                        intent.putExtra(key, (Byte[]) object);
-                    } else if (object instanceof Double[]) {
-                        intent.putExtra(key, (Double[]) object);
-                    } else if (object instanceof Long[]) {
-                        intent.putExtra(key, (Long[]) object);
-                    } else if (object instanceof Serializable[]) {
-                        intent.putExtra(key, (Serializable[]) object);
-                    } else if (object instanceof Parcelable[]) {
-                        intent.putExtra(key, (Parcelable[]) object);
-                    } else if (object instanceof Character[]) {
-                        intent.putExtra(key, (Character[]) object);
-                    } else {//转入 json 存储
-                        intent.putExtra(key, GT.JSON.toJson2(object));
-                    }
-
-                }
-            }
-        } catch (Exception e) {
-
-        }
-        return intent;
-    }
-
-    /**
-     * ParamsType 参数
-     *
-     * @param intent
-     */
-    private Intent setParamsType(Intent intent) {
-        if(aRouterBean == null) return intent;
-        //如果传递的int是 Bundle 数据，那就通过 ent 传递
-        try {
-            Map<String, Object> bundleParams = aRouterBean.getParamsType();
-            if (bundleParams != null && !bundleParams.keySet().isEmpty()) {
-                if(intent == null) intent = new Intent();
+                if (intent == null) intent = new Intent();
                 for (String key : bundleParams.keySet()) {
                     Object object = bundleParams.get(key);
                     if (object instanceof String) {
@@ -737,10 +967,11 @@ public class ARouter {
      * @param bundle
      */
     private void setFragmentParams(Bundle bundle) {
+        if (aRouterBean == null) return;
         //如果传递的int是 Bundle 数据，那就通过 ent 传递
         try {
             Map<String, Object> bundleParams = aRouterBean.getBundleParams();
-            if (bundleParams != null && bundleParams.keySet().size() != 0) {
+            if (bundleParams != null && !bundleParams.keySet().isEmpty()) {
                 for (String key : bundleParams.keySet()) {
                     Object object = bundleParams.get(key);
                     if (object instanceof String) {
@@ -800,10 +1031,6 @@ public class ARouter {
         isDebugARouter = true;
     }
 
-    public static synchronized void openLog() {
-        isLog = true;
-    }
-
     public static synchronized void printStackTrace() {
 
     }
@@ -826,7 +1053,7 @@ public class ARouter {
      * @param packagePath
      */
     private static void loadHibernateAnnotation(Context context, String packagePath) {
-        if(packagePath == null) return;
+        if (packagePath == null) return;
         try {
             String packageCodePath = context.getPackageCodePath();
             DexFile dexFile = new DexFile(packageCodePath);
@@ -862,8 +1089,10 @@ public class ARouter {
                 }
             }
 
-        } catch (IOException e) {
-            GT.errt("异常:" + e);
+        } catch (Exception e) {
+            if (isDebugARouter) {
+                GT.errt("e:" + e);
+            }
         }
 
     }

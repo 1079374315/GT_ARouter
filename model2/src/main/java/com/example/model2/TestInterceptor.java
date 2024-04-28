@@ -4,8 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
+import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
 import com.gsls.gt.GT;
+import com.gsls.gt_databinding.route.annotation.GT_Autowired;
 import com.gsls.gt_databinding.route.annotation.GT_Route;
 
 /**
@@ -21,23 +23,33 @@ import com.gsls.gt_databinding.route.annotation.GT_Route;
 @GT_Route(value = Config.TestInterceptor.MAIN, extras = "测试TestInterceptor拦截")
 public class TestInterceptor implements GT.ARouter.IInterceptor {
 
+    @GT_Autowired
+    private String name;
+
     @Override
-    public void init(Context context) {
-        GT.logt("初始化 拦截器TestInterceptor:"+ context);
+    public void init(Context context, String injectObject) {
+        GT.logt("初始化 拦截器TestInterceptor:" + injectObject);
+//        GT.logt("injectObject:" + injectObject);
+        ARouter.getInstance().inject(this, injectObject);//与Autowired配合使用
     }
 
     @Override
     public boolean process(Intent intent, GT.ARouter.InterceptorCallback callback) {
-        GT.logt("拦截器 TestInterceptor intent:" + intent);
-        GT.logt("拦截器 callback:" + callback);
+//        GT.logt("拦截器 TestInterceptor intent:" + intent);
 
+//        if(intent == null) return callback.onAbort(intent);
+
+        //需要的拦截器参数
         String extra = intent.getStringExtra("extra");
-        GT.logt("拦截器 extra:" + extra);
-        String name = intent.getStringExtra("name");
-        GT.logt("拦截器 name:" + name);
+        GT.logt("extra:" + extra);
+        GT.logt("name:" + name);
 
+
+        //拦截器其他逻辑
+
+
+        GT.logt("拦截通过");
         return callback.onContinue(intent);//拦截通过
 //        return callback.onAbort(intent);//驳回不通过
     }
-
 }
