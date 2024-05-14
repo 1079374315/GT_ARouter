@@ -1,21 +1,14 @@
 package com.example.myapplication;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
-import com.example.myapplication.floating_window.RulerFloating;
 import com.example.myapplication.notification.NotificationDemo;
-import com.example.myapplication.popupwindow.ScanQRCodesPopupWindow;
-import com.example.myapplication.view.CircleView;
 import com.gsls.gt.GT;
 import com.gsls.gt_databinding.route.annotation.GT_Route;
-import com.gsls.toolkit.GT_Floating;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +31,7 @@ public class JavaActivity extends AppCompatActivity {
             map.put("3",333);
 
 
-            ARouter.getInstance()
+            GT.ARouter.getInstance()
                     .build(Config.Model1Config.ModelActivity1.MAIN)
                     .putExtra(Config.Model1Config.ModelActivity1.keyBBB, 1079)
                     .putExtra(Config.Model1Config.ModelActivity1.keyCCC, true)

@@ -24,6 +24,7 @@ public class Lib1ServiceImpl implements BaseService {
 
     @Override
     public void init(Context context) {
+        GT.logt("init:" + context);
         mContext = context;
     }
 }

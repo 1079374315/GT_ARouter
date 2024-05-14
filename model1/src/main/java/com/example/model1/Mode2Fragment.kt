@@ -2,8 +2,6 @@ package com.example.model1
 
 import android.os.Bundle
 import android.view.View
-import com.example.baselibrary.ARouter
-import com.example.baselibrary.BaseService
 import com.example.baselibrary.Config
 import com.gsls.gt.GT
 import com.gsls.gt_databinding.route.annotation.GT_Autowired
@@ -23,7 +21,7 @@ class Mode2Fragment : GT.GT_Fragment.BaseFragment() {
 
     override fun initView(view: View?, savedInstanceState: Bundle?) {
         GT.logt("初始化 Mode2Fragment")
-        ARouter.getInstance().inject(this) //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this) //与Autowired配合使用
         "name:$name".logt()
         arguments
 

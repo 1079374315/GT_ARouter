@@ -21,8 +21,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
@@ -36,5 +36,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation project(path: ':baselibrary')
-    annotationProcessor  project(':gt-DataBinding')
+    annotationProcessor project(':gt-DataBinding')
+//    annotationProcessor 'com.github.1079374315:GSLS_Tool:v1.4.5.6'//注册 gt-DataBinding 功能
 }

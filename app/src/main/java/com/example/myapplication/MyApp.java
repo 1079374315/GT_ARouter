@@ -2,25 +2,20 @@ package com.example.myapplication;
 
 import android.app.Application;
 
-import com.example.baselibrary.ARouter;
 import com.gsls.gt.GT;
-import com.gsls.gt_databinding.annotation.GT_R_Build;
+import com.gsls.gt_databinding.route.annotation.GT_RoutePath;
 
-//@GT_R_Build
+@GT_RoutePath  //标记路由总部所在 模块
 public class MyApp extends Application {
 
-    @Override
     public void onCreate() {
         super.onCreate();
-        ARouter.init(this); //初始化
-        ARouter.openDebug(); //打开debug开关
+        GT.ARouter.init(this); /// 尽可能早，推荐在Application中初始化
     }
 
-
-    @Override
     public void onTerminate() {
         super.onTerminate();
         //释放资源
-        ARouter.getInstance().destroy();
+        GT.ARouter.getInstance().destroy();//释放资源路由全部资源
     }
 }

@@ -1,13 +1,11 @@
 package com.example.myapplication.view
 
 import android.view.View
-import com.example.baselibrary.ARouter
 import com.example.baselibrary.Config
 import com.example.myapplication.R
 import com.gsls.gt.GT
 import com.gsls.gt.GT.Annotations.GT_AnnotationView
 import com.gsls.gt.GT.Annotations.GT_Click
-import com.gsls.gt_databinding.annotation.GT_DataBinding
 import com.gsls.gt_databinding.route.annotation.GT_Autowired
 import com.gsls.gt_databinding.route.annotation.GT_Route
 import com.gsls.gtk.logt
@@ -22,7 +20,7 @@ class AgeView: GT.GT_View.AnnotationView() {
 
     override fun initView(view: View?) {
         super.initView(view)
-        ARouter.getInstance().inject(this) //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this) //与Autowired配合使用
 
         val arguments = arguments
         val extra = arguments?.getString("extra")

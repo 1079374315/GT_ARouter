@@ -14,7 +14,6 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
 import com.example.myapplication.R;
 import com.gsls.gt.GT;
@@ -53,7 +52,7 @@ public class CircleView extends View {
     //接受传递过来的 Bundle 值
     public CircleView(Context context, Bundle bundle) {
         super(context);
-        ARouter.getInstance().inject(this); //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this); //与Autowired配合使用
         GT.logt("name:" + name);
         String extra = bundle.getString("extra");
         GT.logt("extra:" + extra);

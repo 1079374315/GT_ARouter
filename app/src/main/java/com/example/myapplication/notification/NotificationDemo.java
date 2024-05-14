@@ -4,7 +4,6 @@ package com.example.myapplication.notification;
 import android.content.Context;
 import android.os.Bundle;
 
-import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
 import com.example.myapplication.R;
 import com.gsls.gt.GT;
@@ -28,7 +27,7 @@ public class NotificationDemo extends GT.GT_Notification.AnnotationNotification 
     protected void initView(Context context) {
         super.initView(context);
 
-        ARouter.getInstance().inject(this); //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this); //与Autowired配合使用
         GT.logt("name:" + name);
 
         Bundle arguments = getArguments();

@@ -6,7 +6,6 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
 import com.example.myapplication.R;
 import com.gsls.gt.GT;
@@ -33,7 +32,7 @@ public class DemoDialogFragment extends GT.GT_Dialog.AnnotationDialogFragment {
     @Override
     protected void initView(View view, @Nullable Bundle savedInstanceState) {
         super.initView(view, savedInstanceState);
-        ARouter.getInstance().inject(this); //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this); //与Autowired配合使用
 
         setHideBackground();//隐藏背景(GT内置提供的功能方法)
         setClickExternalNoHideDialog();//设置点击外部无效(GT内置提供的功能方法)
@@ -71,7 +70,7 @@ public class DemoDialogFragment extends GT.GT_Dialog.AnnotationDialogFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        ARouter.getInstance().unregister(this);
+        GT.ARouter.getInstance().unregister(this);
 
     }
 }

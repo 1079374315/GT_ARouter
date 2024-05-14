@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
 
 //        startActivity(Intent(this@MainActivity, JavaActivity::class.java))
         /*findViewById<Button>(R.id.btn).setOnClickListener {
-            ARouter.getInstance().build("/model1/ModelActivity1").navigation<Any>()
+            GT.ARouter.getInstance().build("/model1/ModelActivity1").navigation<Any>()
         }*/
 
 

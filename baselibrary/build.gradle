@@ -41,6 +41,11 @@ dependencies {
 
     api project(':gt')
     api project(':gt-DataBinding')
-    kapt project(':gt-DataBinding')
+    annotationProcessor project(':gt-DataBinding')
+
+
+    //GT基础功能(必要的)
+//    api 'com.github.1079374315:GSLS_Tool:v1.4.5.6'
+//    annotationProcessor 'com.github.1079374315:GSLS_Tool:v1.4.5.6'//注册 gt-DataBinding 功能
 
 }

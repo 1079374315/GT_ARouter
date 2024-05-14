@@ -3,7 +3,6 @@ package com.example.myapplication;
 import android.content.Context;
 import android.content.Intent;
 
-import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
 import com.gsls.gt.GT;
 import com.gsls.gt_databinding.route.annotation.GT_Route;
@@ -25,7 +24,7 @@ public class TestInterceptor2 implements GT.ARouter.IInterceptor {
     @Override
     public void init(Context context, String injectObject) {
         GT.logt("初始化 拦截器TestInterceptor2");
-        ARouter.getInstance().inject(this);
+        GT.ARouter.getInstance().inject(this);
     }
 
     @Override
@@ -34,9 +33,9 @@ public class TestInterceptor2 implements GT.ARouter.IInterceptor {
         String extra = intent.getStringExtra("extra");
         GT.logt("extra:" + extra);
 
-        GT.logt("拦截通过");
-        return callback.onContinue(intent);//拦截通过
-//        return callback.onAbort(intent);//驳回不通过
+        GT.logt("拦截不通过");
+//        return callback.onContinue(intent);//拦截通过
+        return callback.onAbort(intent);//驳回不通过
     }
 }
 

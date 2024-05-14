@@ -2,9 +2,7 @@ package com.example.myapplication.floating_window;
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.view.View
-import com.example.baselibrary.ARouter
 import com.example.baselibrary.Config
 import com.example.myapplication.R
 import com.gsls.gt.GT
@@ -28,7 +26,7 @@ class RulerFloating : GT.GT_FloatingWindow.AnnotationFloatingWindow() {
 
     override fun initView(view: View?) {
         super.initView(view)
-        ARouter.getInstance().inject(this) //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this) //与Autowired配合使用
         "name:$name".logt()
         "初始化 悬浮窗".logt()
         isDrag = true;//设置可拖动

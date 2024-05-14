@@ -1,10 +1,8 @@
 package com.example.model2;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 
-import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
 import com.gsls.gt.GT;
 import com.gsls.gt_databinding.route.annotation.GT_Autowired;
@@ -30,7 +28,7 @@ public class TestInterceptor implements GT.ARouter.IInterceptor {
     public void init(Context context, String injectObject) {
         GT.logt("初始化 拦截器TestInterceptor:" + injectObject);
 //        GT.logt("injectObject:" + injectObject);
-        ARouter.getInstance().inject(this, injectObject);//与Autowired配合使用
+        GT.ARouter.getInstance().inject(this, injectObject);//与Autowired配合使用
     }
 
     @Override

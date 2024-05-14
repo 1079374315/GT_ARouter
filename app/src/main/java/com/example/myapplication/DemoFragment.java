@@ -3,7 +3,6 @@ package com.example.myapplication;
 import android.os.Bundle;
 import android.view.View;
 
-import com.example.baselibrary.ARouter;
 import com.example.baselibrary.Config;
 import com.gsls.gt.GT;
 import com.gsls.gt_databinding.route.annotation.GT_Autowired;
@@ -20,7 +19,7 @@ public class DemoFragment extends GT.GT_Fragment.AnnotationFragment{
     protected void initView(View view, Bundle savedInstanceState) {
         super.initView(view, savedInstanceState);
         GT.logt("初始化 DemoFragment");
-        ARouter.getInstance().inject(this); //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this); //与Autowired配合使用
         GT.logt("name:" + name);
     }
 }

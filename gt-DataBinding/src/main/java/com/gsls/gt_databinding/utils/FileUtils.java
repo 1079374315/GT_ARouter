@@ -76,7 +76,6 @@ public class FileUtils {
 
     public static String query(String filePath) {
 
-        //TODO bug问题
         int lastIndexOf = filePath.lastIndexOf("\\") + 1;
         String queryPath = filePath.substring(0, lastIndexOf);
         String fileName = filePath.substring(lastIndexOf);

@@ -4,11 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.PopupWindow
-import com.example.baselibrary.ARouter
 import com.example.baselibrary.Config
 import com.example.myapplication.R
-import com.example.myapplication.viewmode.BaseViewModel
 import com.example.myapplication.viewmode.NullViewModelAll
+import com.gsls.gt.GT
 import com.gsls.gt.GT.Annotations.GT_AnnotationPopupWindow
 import com.gsls.gt.GT.Annotations.GT_Click
 import com.gsls.gt_databinding.annotation.GT_DataBinding
@@ -27,7 +26,7 @@ class ScanQRCodesPopupWindow(context: Context, bundle: Bundle) : ScanQRCodesPopu
 
     override fun initView(view: View?, popWindow: PopupWindow?) {
         super.initView(view, popWindow)
-        ARouter.getInstance().inject(this) //与Autowired配合使用
+        GT.ARouter.getInstance().inject(this) //与Autowired配合使用
         "name:$name".logt()
         "arguments:$arguments".logt()
         val bundle = arguments ?: return

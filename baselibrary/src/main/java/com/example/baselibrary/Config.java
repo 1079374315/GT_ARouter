@@ -20,6 +20,12 @@ public interface Config {
 
         String NOTIFICATION = "/app/Notification/";
 
+        String WEB_VIEW = "/app/WEB_VIEW/";
+
+        String ADAPTER = "/app/ADAPTER/";
+
+        String VIEW_MODEL = "/app/VIEW_MODEL/";
+
     }
 
     interface DemoFragment1{
