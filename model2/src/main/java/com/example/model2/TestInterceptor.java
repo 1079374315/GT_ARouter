@@ -19,35 +19,28 @@ import com.gsls.gt_databinding.route.annotation.GT_Route;
  * 7.设计上要遵循 拦截器不受模块影响。
  */
 @GT_Route(value = Config.TestInterceptor.MAIN, extras = "测试TestInterceptor拦截")
-public class TestInterceptor implements GT.ARouter.IInterceptor {
+public class TestInterceptor implements GT.ARouter.Interceptor {
 
     @GT_Autowired
     private String name;
 
     @Override
     public void init(Context context, String injectObject) {
-        GT.logt("初始化 拦截器TestInterceptor:" + injectObject);
-//        GT.logt("injectObject:" + injectObject);
         GT.ARouter.getInstance().inject(this, injectObject);//与Autowired配合使用
     }
 
     @Override
     public boolean process(Intent intent, GT.ARouter.InterceptorCallback callback) {
-//        GT.logt("拦截器 TestInterceptor intent:" + intent);
-
-//        if(intent == null) return callback.onAbort(intent);
-
+        if(intent == null) return callback.onAbort(null);
         //需要的拦截器参数
         String extra = intent.getStringExtra("extra");
         GT.logt("extra:" + extra);
         GT.logt("name:" + name);
-
+        //根据调用者提供的数据 判断登录状态
 
         //拦截器其他逻辑
-
-
         GT.logt("拦截通过");
-        return callback.onContinue(intent);//拦截通过
-//        return callback.onAbort(intent);//驳回不通过
+        return callback.onContinue(intent);//已登录的 拦截通过
+//        return callback.onAbort(intent);//未登录的 驳回不通过
     }
 }

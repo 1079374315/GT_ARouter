@@ -14,9 +14,9 @@ import com.gsls.gt_databinding.route.annotation.GT_Route;
 @GT_Route(value = Config.Model2Config.MAIN, interceptors = {Config.TestInterceptor.MAIN, Config.TestInterceptor2.MAIN}, extras = "模块2主页")
 public class ModelActivity2 extends GT.GT_Activity.AnnotationActivity {
 
-    //在初始化的时候直接默认启动 MainFragment
-    @GT.GT_Fragment.Build(setLayoutMain = R2.id.fcv, setLayoutHome = R2.id.fcv)
-    private GT.GT_Fragment gt_fragment;
+    //在初始化的时候直接默认启动 MainFragment，编译后，接口此处就可以
+//    @GT.GT_Fragment.Build(setLayoutMain = R2.id.fcv, setLayoutHome = R2.id.fcv)
+//    private GT.GT_Fragment gt_fragment;
 
 
     @Override

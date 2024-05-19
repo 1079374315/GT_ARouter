@@ -17,7 +17,8 @@ import com.gsls.gt_databinding.route.annotation.GT_Route
 class DemoAdapter(context: Context, private val onListener: GT.OnListener<DemoBean>) :
    DemoAdapterBinding<DemoBean>(context) {
 
-    override fun initView(holder: DemoAdapterViewHolder?, itemView: View?, position: Int, t: DemoBean?, context: Context?) {
+    override fun initView(holder: DemoAdapterViewHolder?, itemView: View?,
+                          position: Int, t: DemoBean?, context: Context?) {
         super.initView(holder, itemView, position, t, context)
         holder ?: return
         t ?: return

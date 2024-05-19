@@ -19,8 +19,7 @@ import com.gsls.gt_databinding.route.annotation.GT_Route;
  */
 
 @GT_Route(value = Config.TestInterceptor2.MAIN, extras = "测试TestInterceptor2拦截")
-public class TestInterceptor2 implements GT.ARouter.IInterceptor {
-
+public class TestInterceptor2 implements GT.ARouter.Interceptor {
     @Override
     public void init(Context context, String injectObject) {
         GT.logt("初始化 拦截器TestInterceptor2");

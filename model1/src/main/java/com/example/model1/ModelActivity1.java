@@ -9,21 +9,26 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.baselibrary.BaseService;
 import com.example.baselibrary.Config;
+import com.example.baselibrary.DemoBean;
+import com.example.baselibrary.NullViewModelAllL;
 import com.example.baselibrary.RoutePath;
 import com.gsls.gt.GT;
 import com.gsls.gt_databinding.annotation.GT_R_Build;
 import com.gsls.gt_databinding.route.annotation.GT_Autowired;
 import com.gsls.gt_databinding.route.annotation.GT_Route;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @GT_R_Build
 @GT_Route(value = Config.Model1Config.ModelActivity1.MAIN, extras = "模块1主页")
-//@GT_Route(value = RoutePath.Model1_ModelActivity1.PATH, extras = "模块1主页")
 @GT.Annotations.GT_AnnotationActivity(R2.layout.activity_model1)
 public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
 
@@ -65,9 +70,9 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                 Bundle bundle = new Bundle();
                 bundle.putString("extra", "我的 Bundle extra 参数");
 
-                //TODO 看能不能把 APT路由自动生成 路径  给做好，做好后再一并发布
+                //TODO 下面的每一步都可以单独解开 运行看效果
 
-               /* GT.GT_WebView.BaseWebView webView = GT.ARouter.getInstance()
+                /*GT.GT_WebView.BaseWebView webView = GT.ARouter.getInstance()
                         .build(Config.AppConfig.WEB_VIEW)
                         .constructorParams(
                                 new Class[]{Context.class, ViewGroup.class, Bundle.class},
@@ -105,7 +110,7 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                 //路由 方法
                 /*BaseService baseService = GT.ARouter.getInstance()
                         .build(Config.AppConfig.LIB1_SERVICE_IMPL_SAY_HELLO)
-                        .navigation(ModelActivity1.this);
+                        .navigation();
                 String s = baseService.sayHello(23);
                 GT.logt("方法返回的值:" + s);*/
 
@@ -115,16 +120,17 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                         .build(Config.AppConfig.VIEW_MODEL)
                         .navigation();
                 if(viewModel != null){
-                    viewModel.getAppData().observe(ModelActivity1.this, new Observer<DemoBean>() {
+                    viewModel.getAppData().observe(ModelActivity1.this,
+                            new Observer<DemoBean>() {
                         @Override
                         public void onChanged(DemoBean demoBean) {
-                            GT.logt("接受到 ViewModel:" + demoBean);
+                            GT.logt("ViewModel:" + demoBean);
                         }
                     });
                 }*/
 
 
-               /* GT.GT_Notification.BaseNotification notification = GT.ARouter.getInstance()
+                /*GT.GT_Notification.BaseNotification notification = GT.ARouter.getInstance()
                         .build(Config.AppConfig.NOTIFICATION)
                         .constructorParams(
                                 new Class[]{Context.class,  Bundle.class},
@@ -156,12 +162,13 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                         .withObject("name", name)
                         .navigation();
                 if (floatingWindow != null) {
-                    GT.GT_FloatingWindow.BaseFloatingWindow.setType_screenType(GT.GT_FloatingWindow.BaseFloatingWindow.TYPE_DEFAULT);
+                    GT.GT_FloatingWindow.BaseFloatingWindow.setType_screenType(
+                            GT.GT_FloatingWindow.BaseFloatingWindow.TYPE_DEFAULT);
                     startFloatingWindow(ModelActivity1.this, floatingWindow);
                 }*/
 
-                //验证参数传递
-                /*View view = GT.ARouter.getInstance()
+                //
+               /* View view = GT.ARouter.getInstance()
                                 .build(Config.AppConfig.VIEW)
                                 .constructorParams(
                                         new Class[]{Context.class,  Bundle.class},
@@ -199,9 +206,9 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
 
 
 
-                //直接启动拦截器，可以直接用拦截器当过滤器
+                //直接启动                                                         ，可以直接用拦截器当过滤器
                 /*GT.ARouter.getInstance()
-                        .build(Config.TestInterceptor2.MAIN)
+                        .build(Config.TestInterceptor.MAIN)
                         .putExtra("extra","我的 extra")
                         .withObject("name", name)
                         .navigation(new GT.ARouter.InterceptorCallback() {
@@ -209,7 +216,6 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                             public boolean onContinue(Intent intent) {
                                 GT.logt("继续执行了");
                                 //开始当前其他逻辑
-
                                 return super.onContinue(intent);
                             }
 
@@ -217,7 +223,6 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                             public boolean onAbort(Intent intent) {
                                 GT.logt("跳转被拦截");
                                 //开始当前其他被拦截逻辑
-
                                 return super.onAbort(intent);
                             }
                         });*/
@@ -227,8 +232,15 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                         .build(Config.Model2Config.MAIN)
                         .putExtra("extra", "我的 extra")
                         .withObject("name", name)
-//                        .greenChannal()
-                        .navigation(ModelActivity1.this, new GT.ARouter.InterceptorCallback() {
+                        .greenChannal()//绿色通过所有拦截器
+                        .navigation();
+
+                /*GT.ARouter.getInstance()
+                        .build(Config.Model2Config.MAIN)
+                        .putExtra("extra", "我的 extra")
+                        .withObject("name", name)
+                        .navigation(ModelActivity1.this,
+                                new GT.ARouter.InterceptorCallback() {
                             @Override
                             public boolean onContinue(Intent intent) {
                                 GT.logt("继续执行了");
@@ -240,7 +252,7 @@ public class ModelActivity1 extends GT.GT_Activity.AnnotationActivity {
                                 GT.logt("跳转被拦截");
                                 return super.onAbort(intent);
                             }
-                        });
+                        });*/
             }
         });
     }

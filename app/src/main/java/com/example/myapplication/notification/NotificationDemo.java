@@ -13,7 +13,9 @@ import com.gsls.gt_databinding.route.annotation.GT_Route;
 
 @GT_Route(value = Config.AppConfig.NOTIFICATION, extras = "通知栏")
 //加载 折叠通知栏 与 展开通知栏
-@GT.Annotations.GT_Notification(value = R.layout.item_notification, value2 = R.layout.item_notification2)
+@GT.Annotations.GT_Notification(
+        value = R.layout.item_notification,
+        value2 = R.layout.item_notification2)
 public class NotificationDemo extends GT.GT_Notification.AnnotationNotification {
 
     @GT_Autowired

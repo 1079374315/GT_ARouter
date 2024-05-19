@@ -23,47 +23,11 @@ import com.gsls.gtk.logt
  * @param viewGroup 装 Web 容器
  */
 @GT_Route(value = Config.AppConfig.WEB_VIEW, extras = "web 网页")
-class WebViews(context: Context, viewGroup: ViewGroup, bundle: Bundle) : AnnotationWebView(context, viewGroup, bundle) {
-
-    //是否初始化
-    private var isInit = false
+class WebViews(context: Context, viewGroup: ViewGroup, bundle: Bundle) :
+    AnnotationWebView(context, viewGroup, bundle) {
 
     @GT_Autowired
     private val name: String? = null
-
-    //开始加载
-    override fun pageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-        super.pageStarted(view, url, favicon)
-        if(!isInit){
-            isInit = true
-        }
-    }
-
-    //结束加载
-    override fun pageFinished(view: WebView, url: String) {
-        super.pageFinished(view, url)
-    }
-
-
-    override fun loadProgress(progress: Int) {
-        super.loadProgress(progress)
-        if (progress >= 100) {
-        }
-    }
-
-    //处理异常重定向链接
-    override fun shouldOverrideUrlLoad(view: WebView?, url: String?): Boolean {
-        context?.let {
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                it.startActivity(intent)
-            } catch (e: ActivityNotFoundException) {
-                webView?.goBack()
-                webView?.goBack()
-            }
-        }
-        return super.shouldOverrideUrlLoad(view, url)
-    }
 
     override fun initView(context: Context, webView: WebView) {
         super.initView(context, webView)
@@ -76,26 +40,5 @@ class WebViews(context: Context, viewGroup: ViewGroup, bundle: Bundle) : Annotat
             GT.logt("extra:$extra")
         }
     }
-
-    override fun onShowFileChoosers(acceptType: String): Boolean {
-        return super.onShowFileChoosers(acceptType)
-    }
-
-
-    //监听下载文件处理
-    override fun onDownloadFile(downloadUrl: String, userAgent: String?, contentDisposition: String?, mimetype: String?, fileSize: String?, contentLength: Long) {
-        super.onDownloadFile(downloadUrl, userAgent, contentDisposition, mimetype, fileSize, contentLength)
-    }
-
-    //读取 html 发送的数据
-    override fun readData(json: String) {
-        super.readData(json)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-    }
-
 
 }

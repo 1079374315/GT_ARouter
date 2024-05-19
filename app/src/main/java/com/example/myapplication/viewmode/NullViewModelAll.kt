@@ -36,5 +36,4 @@ class NullViewModelAll<T : ViewModelFeedback?> : GT_BindingViewModel<T, BaseView
         return getAppDataValue;
     }
 
-
 }

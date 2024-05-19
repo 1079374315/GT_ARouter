@@ -41,6 +41,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
     implementation project(path: ':baselibrary')
-    kapt project(':gt-DataBinding')
-//    kapt 'com.github.1079374315:GSLS_Tool:v1.4.5.6'//注册 gt-DataBinding 功能
+    kapt 'com.github.1079374315:GSLS_Tool:v1.4.6.0'//注册 gt-DataBinding 功能
 }

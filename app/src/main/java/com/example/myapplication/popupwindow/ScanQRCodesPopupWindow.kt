@@ -19,7 +19,8 @@ import com.gsls.gtk.logt
 @GT_DataBinding(setLayout = "popup_window_scan_qr_code", setBindingType = GT_DataBinding.PopupWindow)
 @GT_Route(value = Config.AppConfig.POPUP_WINDOW, extras = "长安 更多内容")
 @GT_AnnotationPopupWindow(R.layout.popup_window_scan_qr_code)
-class ScanQRCodesPopupWindow(context: Context, bundle: Bundle) : ScanQRCodesPopupWindowBinding<NullViewModelAll<*>>(context, bundle) {
+class ScanQRCodesPopupWindow(context: Context, bundle: Bundle) :
+    ScanQRCodesPopupWindowBinding<NullViewModelAll<*>>(context, bundle) {
 
     @GT_Autowired
     private val name: String? = null
